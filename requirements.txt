@@ -1,0 +1,8 @@
+streamlit
+torch
+torchvision
+pillow
+numpy
+scikit-learn
+sqlalchemy
+requests
