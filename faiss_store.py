@@ -21,7 +21,7 @@ def search(query_image):
     global FEATURES
 
     if not FEATURES:
-        return None, None
+        return None, 0
 
     query_feature = extract_features(query_image)
 
@@ -30,6 +30,7 @@ def search(query_image):
 
     for file, feature in FEATURES.items():
         score = cosine_similarity([query_feature], [feature])[0][0]
+
         if score > best_score:
             best_score = score
             best_match = file
