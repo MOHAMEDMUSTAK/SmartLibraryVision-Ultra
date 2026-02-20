@@ -16,10 +16,7 @@ def extract_features(image):
 
     with torch.no_grad():
         features = model(image)
-
     features = features.numpy().flatten()
-
     # Normalize (CRITICAL)
     features = features / np.linalg.norm(features)
-
     return features
