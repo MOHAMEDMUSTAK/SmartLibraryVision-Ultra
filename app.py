@@ -4,11 +4,11 @@ import os
 import uuid
 from database import Session, Book
 from faiss_store import build_index, search
-import numpy as np
 
+# Page configuration
 st.set_page_config(page_title="Smart Library Vision Ultra", layout="wide")
 
-# Custom CSS for Attractive UI
+# Custom UI styling
 st.markdown("""
 <style>
 .main {
@@ -25,25 +25,34 @@ h1 {
 </style>
 """, unsafe_allow_html=True)
 
-st.title("📚 Smart Library Vision Ultra")
-st.markdown("### AI-Powered Book Recognition & Library Management")
+st.title("Smart Library Vision Ultra")
+st.write("AI-Powered Visual Book Recognition System")
 
 session = Session()
 
-# Sidebar Menu
-menu = st.sidebar.selectbox("Navigation", ["Search Book", "Live Webcam Search", "Add New Book"])
-
-# Build FAISS index once
+# Build feature index once
 if "index_ready" not in st.session_state:
     build_index()
     st.session_state.index_ready = True
 
-# ---------------- SEARCH BOOK ----------------
-if menu == "Search Book":
+# Sidebar navigation
+menu = st.sidebar.selectbox(
+    "Navigation",
+    ["Search Book (Upload)", "Search Book (Webcam)", "Add New Book"]
+)
+
+# Strict threshold for exact matching
+STRICT_THRESHOLD = 0.95
+
+
+# ---------------------------------------------------
+# SEARCH USING UPLOAD
+# ---------------------------------------------------
+if menu == "Search Book (Upload)":
 
     st.subheader("Upload Book Cover")
 
-    uploaded_file = st.file_uploader("Upload Image", type=["jpg","png","jpeg"])
+    uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
 
     if uploaded_file:
         image = Image.open(uploaded_file).convert("RGB")
@@ -53,33 +62,33 @@ if menu == "Search Book":
         with col1:
             st.image(image, caption="Uploaded Image", width=300)
 
-        match_file, distance = search(image)
+        match_file, best_score = search(image)
 
-        if match_file:
-            confidence = max(0, 100 - distance)
+        st.write("Similarity Score:", round(best_score, 4))
 
-            if confidence > 60:
-                book = session.query(Book).filter(
-                    Book.image_path == f"covers/{match_file}"
-                ).first()
+        if match_file and best_score >= STRICT_THRESHOLD:
+            book = session.query(Book).filter(
+                Book.image_path == f"covers/{match_file}"
+            ).first()
 
+            if book:
                 with col2:
                     matched_image = Image.open(f"covers/{match_file}")
                     st.image(matched_image, caption="Matched Book", width=300)
 
-                st.success("✅ Book Found in Library")
-                st.write(f"**Title:** {book.title}")
-                st.write(f"**Author:** {book.author}")
-                st.write(f"**Genre:** {book.genre}")
-                st.write(f"**Shelf:** {book.shelf}")
-                st.write(f"**Confidence:** {round(confidence,2)}%")
-            else:
-                st.error("❌ Book Not Found")
+                st.success("Book Found")
+                st.write("Title:", book.title)
+                st.write("Author:", book.author)
+                st.write("Genre:", book.genre)
+                st.write("Shelf:", book.shelf)
         else:
-            st.error("Library is empty.")
+            st.error("Book Not Found")
 
-# ---------------- LIVE WEBCAM ----------------
-elif menu == "Live Webcam Search":
+
+# ---------------------------------------------------
+# SEARCH USING WEBCAM
+# ---------------------------------------------------
+elif menu == "Search Book (Webcam)":
 
     st.subheader("Capture Book Using Webcam")
 
@@ -87,31 +96,34 @@ elif menu == "Live Webcam Search":
 
     if camera_image:
         image = Image.open(camera_image).convert("RGB")
-        st.image(image, width=300)
 
-        match_file, distance = search(image)
+        st.image(image, caption="Captured Image", width=300)
 
-        if match_file:
-            confidence = max(0, 100 - distance)
+        match_file, best_score = search(image)
 
-            if confidence > 60:
-                book = session.query(Book).filter(
-                    Book.image_path == f"covers/{match_file}"
-                ).first()
+        st.write("Similarity Score:", round(best_score, 4))
 
+        if match_file and best_score >= STRICT_THRESHOLD:
+            book = session.query(Book).filter(
+                Book.image_path == f"covers/{match_file}"
+            ).first()
+
+            if book:
                 matched_image = Image.open(f"covers/{match_file}")
                 st.image(matched_image, caption="Matched Book", width=300)
 
-                st.success("✅ Book Found in Library")
-                st.write(f"**Title:** {book.title}")
-                st.write(f"**Author:** {book.author}")
-                st.write(f"**Genre:** {book.genre}")
-                st.write(f"**Shelf:** {book.shelf}")
-                st.write(f"**Confidence:** {round(confidence,2)}%")
-            else:
-                st.error("❌ Book Not Found")
+                st.success("Book Found")
+                st.write("Title:", book.title)
+                st.write("Author:", book.author)
+                st.write("Genre:", book.genre)
+                st.write("Shelf:", book.shelf)
+        else:
+            st.error("Book Not Found")
 
-# ---------------- ADD BOOK ----------------
+
+# ---------------------------------------------------
+# ADD NEW BOOK
+# ---------------------------------------------------
 elif menu == "Add New Book":
 
     st.subheader("Add New Book to Library")
@@ -120,7 +132,7 @@ elif menu == "Add New Book":
     author = st.text_input("Author")
     genre = st.text_input("Genre")
     shelf = st.text_input("Shelf Location")
-    image_file = st.file_uploader("Upload Book Cover", type=["jpg","png","jpeg"])
+    image_file = st.file_uploader("Upload Book Cover", type=["jpg", "png", "jpeg"])
 
     if st.button("Add Book"):
 
@@ -132,7 +144,7 @@ elif menu == "Add New Book":
             unique_name = str(uuid.uuid4()) + ".jpg"
             image_path = os.path.join("covers", unique_name)
 
-            image = Image.open(image_file)
+            image = Image.open(image_file).convert("RGB")
             image.save(image_path)
 
             book = Book(
@@ -146,8 +158,9 @@ elif menu == "Add New Book":
             session.add(book)
             session.commit()
 
+            # Rebuild index after adding book
             build_index()
 
-            st.success("✅ Book Added Successfully!")
+            st.success("Book Added Successfully")
         else:
-            st.warning("Please fill all fields.")
+            st.warning("Please fill all fields")
