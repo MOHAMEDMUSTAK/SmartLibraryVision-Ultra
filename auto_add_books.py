@@ -1,11 +1,9 @@
 import os
 import requests
 from database import Session, Book
-
 # Create covers folder if not exists
 if not os.path.exists("covers"):
     os.makedirs("covers")
-
 # Sample books with ISBN
 books_data = [
     ("Data Structures and Algorithms", "Mark Allen", "Computer Science", "A1", "9780131103627"),
@@ -19,14 +17,10 @@ books_data = [
     ("Database System Concepts", "Abraham Silberschatz", "Database", "D1", "9780073523323"),
     ("Machine Learning", "Tom Mitchell", "ML", "B3", "9780070428072")
 ]
-
 session = Session()
-
 for title, author, genre, shelf, isbn in books_data:
-    
     image_url = f"https://covers.openlibrary.org/b/isbn/{isbn}-L.jpg"
     image_path = f"covers/{isbn}.jpg"
-
     try:
         response = requests.get(image_url)
         
