@@ -27,7 +27,6 @@ for title, author, genre, shelf, isbn in books_data:
         if response.status_code == 200:
             with open(image_path, "wb") as f:
                 f.write(response.content)
-
             book = Book(
                 title=title,
                 author=author,
@@ -35,15 +34,11 @@ for title, author, genre, shelf, isbn in books_data:
                 shelf=shelf,
                 image_path=image_path
             )
-
             session.add(book)
             print(f"Added: {title}")
-
         else:
             print(f"Cover not found for {title}")
-
     except Exception as e:
         print(f"Error downloading {title}: {e}")
-
 session.commit()
 print("All books added successfully!")
