@@ -1,5 +1,4 @@
 # Smart Library Vision Ultra
-
 Smart Library Vision Ultra is an AI-powered visual library management system that enables users to search for books using book cover images instead of traditional text-based queries. The system uses deep learning for feature extraction and similarity matching, providing an intelligent and modern solution for library search and management.
 
 This project is built entirely in Python using Streamlit for the web interface and PyTorch (ResNet50) for computer vision-based feature extraction.
