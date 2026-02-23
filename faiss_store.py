@@ -2,13 +2,10 @@ import os
 from PIL import Image
 from sklearn.metrics.pairwise import cosine_similarity
 from image_model import extract_features
-
 FEATURES = {}
-
 def build_index():
     global FEATURES
     FEATURES = {}
-
     if not os.path.exists("covers"):
         os.makedirs("covers")
 
