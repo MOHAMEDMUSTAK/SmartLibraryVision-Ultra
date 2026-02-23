@@ -4,7 +4,6 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 engine = create_engine("sqlite:///library.db")
 Session = sessionmaker(bind=engine)
 Base = declarative_base()
-
 class Book(Base):
     __tablename__ = "books"
     id = Column(Integer, primary_key=True)
