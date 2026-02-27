@@ -1,6 +1,5 @@
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import declarative_base, sessionmaker
-
 engine = create_engine("sqlite:///library.db")
 Session = sessionmaker(bind=engine)
 Base = declarative_base()
