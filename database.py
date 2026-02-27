@@ -11,5 +11,4 @@ class Book(Base):
     genre = Column(String)
     shelf = Column(String)
     image_path = Column(String)
-
 Base.metadata.create_all(engine)
